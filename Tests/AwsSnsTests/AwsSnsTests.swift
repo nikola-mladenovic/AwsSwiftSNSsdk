@@ -4,7 +4,7 @@ import XCTest
 class AwsSnsTests: XCTestCase {
     static let key = ""
     static let secret = ""
-    static let host = ""
+    static let host = "https://sns.us-west-2.amazonaws.com/"
     
     var snsClient: AwsSns?
     
