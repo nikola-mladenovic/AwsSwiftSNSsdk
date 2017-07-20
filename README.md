@@ -3,6 +3,9 @@
 AwsSns is a Swift library that enables you to use Amazon Web Service Simple Notification Service (AWS SNS) with Swift. More details on this are available from the [AWS SNS documentation](https://aws.amazon.com/documentation/sns/).
 
 <p>
+<a href="https://travis-ci.org/nikola-mladenovic/AwsSwiftSNSsdk" target="_blank">
+<img src="https://travis-ci.org/nikola-mladenovic/AwsSwiftSNSsdk.svg?branch=master">
+</a>
 <a href="https://developer.apple.com/swift/" target="_blank">
 <img src="https://img.shields.io/badge/Swift-4.0-orange.svg?style=flat" alt="Swift 4.0">
 </a>
