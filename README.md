@@ -33,23 +33,14 @@ import AwsSns
 ## Usage
 
 The current release provides `Publish` functionality.
-First initialize `AwsSns` instance with your credentials and host:
+First initialize the `AwsSns` instance with your credentials and the SNS host:
 ``` swift
-let snsClient = AwsSns(host: ..., accessKeyId: ..., secretAccessKey: ...)
+let snsClient = AwsSns(host: "https://sns.us-west-2.amazonaws.com/", accessKeyId: "593ca2ad2782e4000a586d28", secretAccessKey: "ASDI/YZZfLXLna3xEn7JTIJhyH/YZZfLXLna3xEn7JTIJhyH")
 ```
-Then use `publish` method of `AwsSns` instance to send messages to Amazon SNS topic or Amazon SNS target. Message can be represented as `String` or as `[String : Any]`.
+Then use the `publish` method of the `AwsSns` instance to send messages to the SNS topic or the SNS target. Message can be represented either as `String` or as JSON (dictionary).
 Example with `String`:
 ``` swift
-snsClient.publish(message: "Your message", topicArn: ..., completion: { (success, error) in
+snsClient.publish(message: "Your message", topicArn: "arn:aws:sns:us-west-2:487164526243:test", completion: { success, error in
     // Do some work
     ...
 })
-```
-Example with `[String : Any]`:
-``` swift
-snsClient.publish(message: ["default" : ...], topicArn: ..., completion: { (success, error) in
-    // Do some work
-    ...
-})
-```
-

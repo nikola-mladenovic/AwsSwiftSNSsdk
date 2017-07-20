@@ -2,8 +2,8 @@ import XCTest
 @testable import AwsSns
 
 class AwsSnsTests: XCTestCase {
-    static let key = ""
-    static let secret = ""
+    static let key = ProcessInfo.processInfo.environment["AWS_KEY"]!
+    static let secret = ProcessInfo.processInfo.environment["AWS_SECRET"]!
     static let host = "https://sns.us-west-2.amazonaws.com/"
     
     var snsClient: AwsSns?
