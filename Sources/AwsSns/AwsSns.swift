@@ -51,8 +51,8 @@ public class AwsSns {
         }
         
         let dataTask = session.dataTask(with: request, completionHandler: { data, response, error in
-            let success = (response as? HTTPURLResponse)?.statusCode ?? 999 <= 299
-            completion(success, error)
+            let error = self.checkForError(response: response, data: data, error: error)
+            completion(error == nil, error)
         })
         dataTask.resume()
     }
@@ -94,6 +94,24 @@ public class AwsSns {
         
         return urlRequest
     }
+    
+    private func checkForError(response: URLResponse?, data: Data?, error: Error?) -> Error? {
+        if let error = error {
+            return error
+        }
+        
+        if (response as? HTTPURLResponse)?.statusCode ?? 999 > 299 {
+            if let data = data,
+                let text = String(data: data, encoding: .utf8) {
+                return AwsSnsError.generalError(reason: text)
+            } else {
+                return AwsSnsError.generalError(reason: nil)
+            }
+        }
+        
+        return nil
+    }
+    
 }
 
 public enum AwsSnsError: Error {
