@@ -50,11 +50,10 @@ public class AwsSns {
             return
         }
         
-        let dataTask = session.dataTask(with: request, completionHandler: { data, response, error in
+        session.dataTask(with: request, completionHandler: { data, response, error in
             let error = self.checkForError(response: response, data: data, error: error)
             completion(error == nil, error)
-        })
-        dataTask.resume()
+        }).resume()
     }
     
     /// Method used for publishing messages in dictionary (JSON) format.
@@ -79,6 +78,36 @@ public class AwsSns {
         }
         
         publish(message: jsonString, subject: subject, targetArn: targetArn, topicArn: topicArn, structure: "json", completion: completion)
+    }
+    
+    /// Method used for creating platform endpoints.
+    ///
+    /// - Parameters:
+    ///   - token: Unique identifier created by the notification service for an app on a device.
+    ///   - platformApplicationArn: PlatformApplicationArn returned from CreatePlatformApplication is used to create a an endpoint.
+    ///   - customUserData: Arbitrary user data to associate with the endpoint. Amazon SNS does not use this data. The data must be in UTF-8 format and less than 2KB.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the publish operation was successful, and an optional error in case the operation failed.
+    public func createPlatformEndpoint(token: String, platformApplicationArn: String, customUserData: String? = nil, completion: @escaping (Bool, Error?) -> Void) {
+        var params = defaultParams
+        params["Action"] = "CreatePlatformEndpoint"
+        params["Token"] = token
+        params["PlatformApplicationArn"] = platformApplicationArn
+        if let customUserData = customUserData {
+            params["CustomUserData"] = customUserData
+        }
+        
+        let request: URLRequest
+        do {
+            request = try self.request(with: params)
+        } catch {
+            completion(false, error)
+            return
+        }
+        
+        session.dataTask(with: request, completionHandler: { data, response, error in
+            let error = self.checkForError(response: response, data: data, error: error)
+            completion(error == nil, error)
+        }).resume()
     }
     
     private func request(with urlParams: [String : String?]) throws -> URLRequest {

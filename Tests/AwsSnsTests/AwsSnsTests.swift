@@ -16,39 +16,45 @@ class AwsSnsTests: XCTestCase {
     
     func testPublishString() {
         let publishExpectation = expectation(description: "PublishExpectation")
-        var success = false
-        var error: Error?
         
-        snsClient?.publish(message: "TestMsg", topicArn: "arn:aws:sns:us-west-2:487164526243:msokol-test", completion: { (rSuccess, rError) in
-            success = rSuccess
-            error = rError
+        snsClient?.publish(message: "TestMsg", topicArn: "arn:aws:sns:us-west-2:487164526243:msokol-test") { success, error in
+            XCTAssertTrue(success, "Publish with string failed.")
+            XCTAssertNil(error, "Publish returned error.")
             publishExpectation.fulfill()
-        })
-        waitForExpectations(timeout: 5, handler: nil)
+        }
+        waitForExpectations(timeout: 555, handler: nil)
         
-        XCTAssertTrue(success, "Publish with string failed.")
-        XCTAssertNil(error, "Publish returned error.")
+        
     }
     
     func testPublishDictionary() {
         let publishExpectation = expectation(description: "PublishExpectation")
-        var success = false
-        var error: Error?
         
-        snsClient?.publish(message: ["default" : "TestMsg"], topicArn: "arn:aws:sns:us-west-2:487164526243:msokol-test", completion: { (rSuccess, rError) in
-            success = rSuccess
-            error = rError
+        snsClient?.publish(message: ["default" : "TestMsg"], topicArn: "arn:aws:sns:us-west-2:487164526243:msokol-test") { success, error in
+            XCTAssertTrue(success, "Publish with dictionary failed.")
+            XCTAssertNil(error, "Publish returned error.")
             publishExpectation.fulfill()
-        })
+        }
         waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func testCreatePlatformEndpoint() {
+        let createExpectation = expectation(description: "PublishExpectation")
         
-        XCTAssertTrue(success, "Publish with dictionary failed.")
-        XCTAssertNil(error, "Publish returned error.")
+        let token = "225EF46104D58C43047A4B7749B41297A3A185CB9D441784AFEB5C2F1405285C"
+        
+        snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, error in
+            XCTAssertTrue(success, "CreatePlatformEndpoint failed.")
+            XCTAssertNil(error, "CreatePlatformEndpoint returned error.")
+            createExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
     }
 
 
     static var allTests = [
         ("testPublishString", testPublishString),
         ("testPublishDictionary", testPublishDictionary),
+        ("testCreatePlatformEndpoint", testCreatePlatformEndpoint),
     ]
 }
