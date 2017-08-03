@@ -39,12 +39,13 @@ class AwsSnsTests: XCTestCase {
     }
     
     func testCreatePlatformEndpoint() {
-        let createExpectation = expectation(description: "PublishExpectation")
+        let createExpectation = expectation(description: "CreateExpectation")
         
         let token = "225EF46104D58C43047A4B7749B41297A3A185CB9D441784AFEB5C2F1405285C"
         
-        snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, error in
+        snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
             XCTAssertTrue(success, "CreatePlatformEndpoint failed.")
+            XCTAssertNotNil(endpointArn)
             XCTAssertNil(error, "CreatePlatformEndpoint returned error.")
             createExpectation.fulfill()
         }

@@ -5,7 +5,8 @@ import PackageDescription
 let package = Package(
     name: "AwsSns",
     products: [.library(name: "AwsSns", targets: ["AwsSns"])],
-    dependencies: [.package(url: "https://github.com/nikola-mladenovic/AwsSwiftSign.git", .branch("master"))],
-    targets: [.target(name: "AwsSns", dependencies: ["AwsSign"]),
+    dependencies: [.package(url: "https://github.com/nikola-mladenovic/AwsSwiftSign.git", .branch("master")),
+                   .package(url: "https://github.com/drmohundro/SWXMLHash.git", from: "4.1.1")],
+    targets: [.target(name: "AwsSns", dependencies: ["AwsSign", "SWXMLHash"]),
               .testTarget(name: "AwsSnsTests", dependencies: ["AwsSns"])]
 )

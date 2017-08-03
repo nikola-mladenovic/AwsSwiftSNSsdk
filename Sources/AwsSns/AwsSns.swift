@@ -1,5 +1,6 @@
 import Foundation
 import AwsSign
+import SWXMLHash
 
 public class AwsSns {
     private let host: String
@@ -32,7 +33,7 @@ public class AwsSns {
     ///   - targetArn: The target ARN.
     ///   - topicArn: The topic ARN.
     ///   - structure: String specifying message structure.
-    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the publish operation was successful, and an optional error in case the operation failed.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the publish operation was successful, and an optional `error` in case the operation failed.
     public func publish(message: String, subject: String? = nil, targetArn: String? = nil, topicArn: String? = nil, structure: String? = nil, completion: @escaping (Bool, Error?) -> Void) {
         var params = defaultParams
         params["Action"] = "Publish"
@@ -63,7 +64,7 @@ public class AwsSns {
     ///   - subject: The subject to be published.
     ///   - targetArn: The target ARN.
     ///   - topicArn: The topic ARN.
-    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the publish operation was successful, and an optional error in case the operation failed.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the publish operation was successful, and an optional `error` in case the operation failed.
     public func publish(message: [String : Any], subject: String = "", targetArn: String = "", topicArn: String = "", completion: @escaping (Bool, Error?) -> Void) {
         let messageData: Data
         do {
@@ -86,8 +87,8 @@ public class AwsSns {
     ///   - token: Unique identifier created by the notification service for an app on a device.
     ///   - platformApplicationArn: PlatformApplicationArn returned from CreatePlatformApplication is used to create a an endpoint.
     ///   - customUserData: Arbitrary user data to associate with the endpoint. Amazon SNS does not use this data. The data must be in UTF-8 format and less than 2KB.
-    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the publish operation was successful, and an optional error in case the operation failed.
-    public func createPlatformEndpoint(token: String, platformApplicationArn: String, customUserData: String? = nil, completion: @escaping (Bool, Error?) -> Void) {
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the publish operation was successful, returned `endpointArn`, and an optional `error` in case the operation failed.
+    public func createPlatformEndpoint(token: String, platformApplicationArn: String, customUserData: String? = nil, completion: @escaping (Bool, String?, Error?) -> Void) {
         var params = defaultParams
         params["Action"] = "CreatePlatformEndpoint"
         params["Token"] = token
@@ -100,13 +101,19 @@ public class AwsSns {
         do {
             request = try self.request(with: params)
         } catch {
-            completion(false, error)
+            completion(false, nil, error)
             return
         }
         
         session.dataTask(with: request, completionHandler: { data, response, error in
             let error = self.checkForError(response: response, data: data, error: error)
-            completion(error == nil, error)
+            if error == nil, let data = data, let responseBody = String(data: data, encoding: .utf8) {
+                let xml = SWXMLHash.parse(responseBody)
+                let endpointArn = xml["CreatePlatformEndpointResponse"]["CreatePlatformEndpointResult"]["EndpointArn"].element?.text
+                completion(true, endpointArn, nil)            
+            } else {
+                completion(false, nil, error)
+            }
         }).resume()
     }
     
@@ -130,8 +137,7 @@ public class AwsSns {
         }
         
         if (response as? HTTPURLResponse)?.statusCode ?? 999 > 299 {
-            if let data = data,
-                let text = String(data: data, encoding: .utf8) {
+            if let data = data, let text = String(data: data, encoding: .utf8) {
                 return AwsSnsError.generalError(reason: text)
             } else {
                 return AwsSnsError.generalError(reason: nil)
