@@ -2,8 +2,8 @@ import Foundation
 import SWXMLHash
 
 public struct PlatformApplications {
-    let nextToken: String?
-    let applicationArns: [String]
+    public let nextToken: String?
+    public let applicationArns: [String]
     
     init?(xml: XMLIndexer) {
         let responseXml = xml["ListPlatformApplicationsResponse"]["ListPlatformApplicationsResult"]
@@ -16,8 +16,8 @@ public struct PlatformApplications {
 }
 
 public struct PlatformApplicationEnpoints {
-    let nextToken: String?
-    let endpoints: [Endpoint]
+    public let nextToken: String?
+    public let endpoints: [Endpoint]
     
     init?(xml: XMLIndexer) {
         let responseXml = xml["ListEndpointsByPlatformApplicationResponse"]["ListEndpointsByPlatformApplicationResult"]
@@ -32,8 +32,8 @@ public struct PlatformApplicationEnpoints {
 }
 
 public struct Endpoint {
-    let arn: String
-    let enabled: Bool
+    public let arn: String
+    public let enabled: Bool
     
     init?(xml: XMLIndexer) {
         let enabledXml = xml["Attributes"]["entry"].all.filter { $0["key"].element?.text == "Enabled" }
