@@ -18,7 +18,12 @@ public class AwsSns {
     ///   - accessKeyId: The access key for using the SNS.
     ///   - secretAccessKey: The secret access key for using the SNS.
     public init(host: String, session: URLSession = URLSession(configuration: .default), accessKeyId: String, secretAccessKey: String) {
-        self.host = host.hasSuffix("/") ? host.substring(to: host.index(host.endIndex, offsetBy: -1)) : host
+        var normalizedHost = host
+        if normalizedHost.hasSuffix("/") {
+            normalizedHost.remove(at: String.Index(encodedOffset: normalizedHost.count - 1))
+        }
+        
+        self.host = normalizedHost
         self.session = session
         self.accessKeyId = accessKeyId
         self.secretAccessKey = secretAccessKey
