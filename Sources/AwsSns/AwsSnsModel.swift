@@ -1,14 +1,7 @@
-//
-//  AwsSnsModel.swift
-//  AwsSnsPackageDescription
-//
-//  Created by Marek Sokol on 8/19/17.
-//
-
 import Foundation
 import SWXMLHash
 
-public struct AwsSnsListPlatformResponse {
+public struct PlatformApplications {
     let nextToken: String?
     let applicationArns: [String]
     
@@ -22,23 +15,23 @@ public struct AwsSnsListPlatformResponse {
     }
 }
 
-public struct AwsSnsEnpointsByPlatformResponse {
+public struct PlatformApplicationEnpoints {
     let nextToken: String?
-    let endpoints: [AwsSnsEndpoint]
+    let endpoints: [Endpoint]
     
     init?(xml: XMLIndexer) {
         let responseXml = xml["ListEndpointsByPlatformApplicationResponse"]["ListEndpointsByPlatformApplicationResult"]
         let optionalEndpoints = responseXml["Endpoints"]["member"].all.map { endpointXml in
-            return AwsSnsEndpoint(xml: endpointXml)
+            return Endpoint(xml: endpointXml)
         }
         
-        guard let endpoints = optionalEndpoints as? [AwsSnsEndpoint] else { return nil }
+        guard let endpoints = optionalEndpoints as? [Endpoint] else { return nil }
         self.endpoints = endpoints
         nextToken = responseXml["NextToken"].element?.text
     }
 }
 
-public struct AwsSnsEndpoint {
+public struct Endpoint {
     let arn: String
     let enabled: Bool
     
