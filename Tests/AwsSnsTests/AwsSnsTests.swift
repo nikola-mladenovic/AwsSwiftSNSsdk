@@ -51,11 +51,40 @@ class AwsSnsTests: XCTestCase {
         }
         waitForExpectations(timeout: 5, handler: nil)
     }
-
+    
+    func testListPlatformApplications() {
+        let recievedListExpectation = expectation(description: "RecievedListExpectation")
+        
+        snsClient?.listPlatformApplications { (success, response, error) in
+            XCTAssertTrue(success, "ListPlatformApplications failed.")
+            XCTAssertNotNil(response)
+            XCTAssertNil(error, "ListPlatformApplications returned error.")
+            recievedListExpectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func testListEndpointsByPlatformApplication() {
+        let recievedListExpectation = expectation(description: "RecievedListExpectation")
+        
+        let platformApplicationArn = "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test"
+        
+        snsClient?.listEndpointsBy(platformApplicationArn: platformApplicationArn) { (success, response, error) in
+            XCTAssertTrue(success, "ListEndpointsByPlatformApplication failed.")
+            XCTAssertNotNil(response)
+            XCTAssertNil(error, "ListEndpointsByPlatformApplication returned error.")
+            recievedListExpectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+    }
 
     static var allTests = [
         ("testPublishString", testPublishString),
         ("testPublishDictionary", testPublishDictionary),
         ("testCreatePlatformEndpoint", testCreatePlatformEndpoint),
+        ("testListPlatformApplications", testListPlatformApplications),
+        ("testListEndpointsByPlatformApplication", testListEndpointsByPlatformApplication),
     ]
 }

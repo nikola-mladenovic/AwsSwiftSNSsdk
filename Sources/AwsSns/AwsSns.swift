@@ -117,6 +117,70 @@ public class AwsSns {
         }).resume()
     }
     
+    /// Method used for fetching the list of platform application objects (up top 100 applications per call).
+    ///
+    /// - Parameters:
+    ///   - nextToken: Used when calling `listPlatformApplications` method to retrieve additional records that are available after the first page results.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the fetching operation was successful, returned `AwsSnsListPlatformResponse` instance, and an optional `error` in case the operation failed.
+    public func listPlatformApplications(nextToken: String? = nil, completion: @escaping (Bool, AwsSnsListPlatformResponse?, Error?) -> Void) {
+        var params = defaultParams
+        params["Action"] = "ListPlatformApplications"
+        if let nextToken = nextToken {
+            params["NextToken"] = nextToken
+        }
+        
+        let request: URLRequest
+        do {
+            request = try self.request(with: params)
+        } catch {
+            completion(false, nil, error)
+            return
+        }
+        
+        session.dataTask(with: request, completionHandler: { (data, response, error) in
+            let error = self.checkForError(response: response, data: data, error: error)
+            if error == nil, let data = data, let responseBody = String(data: data, encoding: .utf8),
+                let applicationsResponse = AwsSnsListPlatformResponse(xml: SWXMLHash.parse(responseBody)) {
+                completion(true, applicationsResponse, nil)
+            } else {
+                completion(false, nil, error)
+            }
+        }).resume()
+    }
+    
+    /// Method used for fetching the list of enpoints for the platform application (up top 100 endpoints per call).
+    ///
+    /// - Parameters:
+    ///   - platformApplicationArn: Arn for given platform application.
+    ///   - nextToken: Used when calling `listEndpointsBy` method to retrieve additional records that are available after the first page results.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the fetching operation was successful, returned `AwsSnsEnpointsByPlatformResponse` instance, and an optional `error` in case the operation failed.
+    public func listEndpointsBy(platformApplicationArn: String, nextToken: String? = nil, completion: @escaping (Bool, AwsSnsEnpointsByPlatformResponse?, Error?) -> Void) {
+        var params = defaultParams
+        params["PlatformApplicationArn"] = platformApplicationArn
+        params["Action"] = "ListEndpointsByPlatformApplication"
+        if let nextToken = nextToken {
+            params["NextToken"] = nextToken
+        }
+        
+        let request: URLRequest
+        do {
+            request = try self.request(with: params)
+        } catch {
+            completion(false, nil, error)
+            return
+        }
+        
+        session.dataTask(with: request, completionHandler: { (data, response, error) in
+            let error = self.checkForError(response: response, data: data, error: error)
+            if error == nil, let data = data, let responseBody = String(data: data, encoding: .utf8),
+                let endpointsResponse = AwsSnsEnpointsByPlatformResponse(xml: SWXMLHash.parse(responseBody)) {
+                completion(true, endpointsResponse, nil)
+            } else {
+                completion(false, nil, error)
+            }
+        }).resume()
+    }
+    
     private func request(with urlParams: [String : String?]) throws -> URLRequest {
         var urlComponents = URLComponents(string: host)!
         urlComponents.queryItems = urlParams.filter { $0.value != nil && $0.value?.isEmpty == false }
