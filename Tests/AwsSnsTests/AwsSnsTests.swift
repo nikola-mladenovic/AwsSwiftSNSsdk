@@ -51,11 +51,55 @@ class AwsSnsTests: XCTestCase {
         }
         waitForExpectations(timeout: 5, handler: nil)
     }
-
+    
+    func testListPlatformApplications() {
+        let recievedListExpectation = expectation(description: "RecievedListExpectation")
+        
+        snsClient?.listPlatformApplications { (success, response, error) in
+            XCTAssertTrue(success, "ListPlatformApplications failed.")
+            XCTAssertNotNil(response)
+            XCTAssertNil(error, "ListPlatformApplications returned error.")
+            recievedListExpectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func testListEndpointsByPlatformApplication() {
+        let recievedListExpectation = expectation(description: "RecievedListExpectation")
+        
+        let platformApplicationArn = "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test"
+        
+        snsClient?.listEndpoints(for: platformApplicationArn) { (success, response, error) in
+            XCTAssertTrue(success, "ListEndpointsByPlatformApplication failed.")
+            XCTAssertNotNil(response)
+            XCTAssertNil(error, "ListEndpointsByPlatformApplication returned error.")
+            recievedListExpectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func testDeletePlatformEndpoint() {
+        let deleteExpectation = expectation(description: "CreateExpectation")
+        
+        let token = "225EF46104D58C43047A4B7749B41297A3A185CB9D441784AFEB5C2F1405285C"
+        
+        snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
+            self.snsClient?.deleteEndpoint(endpointArn: endpointArn!) { success, error in
+                XCTAssertNil(error, "DeletePlatformEndpoint returned error.")
+                deleteExpectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
 
     static var allTests = [
         ("testPublishString", testPublishString),
         ("testPublishDictionary", testPublishDictionary),
         ("testCreatePlatformEndpoint", testCreatePlatformEndpoint),
+        ("testListPlatformApplications", testListPlatformApplications),
+        ("testListEndpointsByPlatformApplication", testListEndpointsByPlatformApplication),
+        ("testDeletePlatformEndpoint", testDeletePlatformEndpoint),
     ]
 }

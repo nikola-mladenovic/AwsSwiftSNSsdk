@@ -18,7 +18,12 @@ public class AwsSns {
     ///   - accessKeyId: The access key for using the SNS.
     ///   - secretAccessKey: The secret access key for using the SNS.
     public init(host: String, session: URLSession = URLSession(configuration: .default), accessKeyId: String, secretAccessKey: String) {
-        self.host = host.hasSuffix("/") ? host.substring(to: host.index(host.endIndex, offsetBy: -1)) : host
+        var normalizedHost = host
+        if normalizedHost.hasSuffix("/") {
+            normalizedHost.remove(at: String.Index(encodedOffset: normalizedHost.count - 1))
+        }
+        
+        self.host = normalizedHost
         self.session = session
         self.accessKeyId = accessKeyId
         self.secretAccessKey = secretAccessKey
@@ -114,6 +119,94 @@ public class AwsSns {
             } else {
                 completion(false, nil, error)
             }
+        }).resume()
+    }
+    
+    /// Method used for fetching the list of platform applications (up top 100 applications per call).
+    ///
+    /// - Parameters:
+    ///   - nextToken: Used when calling `listPlatformApplications` method to retrieve additional records that are available after the first page results.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the fetching operation was successful, returned `PlatformApplications` instance, and an optional `error` in case the operation failed.
+    public func listPlatformApplications(nextToken: String? = nil, completion: @escaping (Bool, PlatformApplications?, Error?) -> Void) {
+        var params = defaultParams
+        params["Action"] = "ListPlatformApplications"
+        if let nextToken = nextToken {
+            params["NextToken"] = nextToken
+        }
+        
+        let request: URLRequest
+        do {
+            request = try self.request(with: params)
+        } catch {
+            completion(false, nil, error)
+            return
+        }
+        
+        session.dataTask(with: request, completionHandler: { (data, response, error) in
+            let error = self.checkForError(response: response, data: data, error: error)
+            if error == nil, let data = data, let responseBody = String(data: data, encoding: .utf8),
+                let applicationsResponse = PlatformApplications(xml: SWXMLHash.parse(responseBody)) {
+                completion(true, applicationsResponse, nil)
+            } else {
+                completion(false, nil, error)
+            }
+        }).resume()
+    }
+    
+    /// Method used for fetching the list of PlatformApplicationEnpoints for the platform application (up top 100 endpoints per call).
+    ///
+    /// - Parameters:
+    ///   - platformApplicationArn: Arn for given platform application.
+    ///   - nextToken: Used when calling `listEndpointsBy` method to retrieve additional records that are available after the first page results.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the fetching operation was successful, returned `PlatformApplicationEnpoints` instance, and an optional `error` in case the operation failed.
+    public func listEndpoints(for platformApplicationArn: String, nextToken: String? = nil, completion: @escaping (Bool, PlatformApplicationEnpoints?, Error?) -> Void) {
+        var params = defaultParams
+        params["PlatformApplicationArn"] = platformApplicationArn
+        params["Action"] = "ListEndpointsByPlatformApplication"
+        if let nextToken = nextToken {
+            params["NextToken"] = nextToken
+        }
+        
+        let request: URLRequest
+        do {
+            request = try self.request(with: params)
+        } catch {
+            completion(false, nil, error)
+            return
+        }
+        
+        session.dataTask(with: request, completionHandler: { (data, response, error) in
+            let error = self.checkForError(response: response, data: data, error: error)
+            if error == nil, let data = data, let responseBody = String(data: data, encoding: .utf8),
+                let endpointsResponse = PlatformApplicationEnpoints(xml: SWXMLHash.parse(responseBody)) {
+                completion(true, endpointsResponse, nil)
+            } else {
+                completion(false, nil, error)
+            }
+        }).resume()
+    }
+    
+    /// Deletes the endpoint for a device and mobile app from the SNS.
+    ///
+    /// - Parameters:
+    ///   - endpointArn: EndpointArn of endpoint to delete.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the publish operation was successful, and an optional `error` in case the operation failed.
+    public func deleteEndpoint(endpointArn: String, completion: @escaping (Bool, Error?) -> Void) {
+        var params = defaultParams
+        params["Action"] = "DeleteEndpoint"
+        params["EndpointArn"] = endpointArn
+        
+        let request: URLRequest
+        do {
+            request = try self.request(with: params)
+        } catch {
+            completion(false, error)
+            return
+        }
+        
+        session.dataTask(with: request, completionHandler: { data, response, error in
+            let error = self.checkForError(response: response, data: data, error: error)
+            completion(error == nil, error)
         }).resume()
     }
     
