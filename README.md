@@ -47,3 +47,34 @@ snsClient.publish(message: "Your message", topicArn: "arn:aws:sns:us-west-2:4871
     // Do some work
     ...
 })
+```
+To create an endpoint for a device and mobile app on one of the supported push notification services, such as GCM and APNS, use `createPlatformEndpoint` method of the `AwsSns` instance. The `endpointArn` that is returned by completion closure when using `createPlatformEndpoint` can then be used by the `publish` method to send a message to a mobile app.
+Example:
+``` swift
+let token = "93SDOIFUHWIUEHF839UR0Q93JRF0W93FJ04W385U2Q0"
+let platformApplicationArn = "arn:aws:sns:us-west-2:3904190132:app/test"
+
+snsClient.createPlatformEndpoint(token: token, platformApplicationArn: platformApplicationArn) { success, endpointArn, error in
+    // Do some work
+    ...
+})
+```
+To list the platform application objects for the supported push notification services, such as APNS and GCM, use `listPlatformApplications` method of the `AwsSns` instance. Method can return up to 100 platform application objects per call in it's completion closure. If additional objects are available after the first page results, then a `nextToken` string will not be `nil` in response object.
+Example:
+``` swift
+snsClient.listPlatformApplications { (success, response, error) in
+    // Do some work
+    ...
+})
+```
+To list the endpoint application arns for devices in a supported push notification service, such as GCM and APNS, use `listEndpointsBy` method of the `AwsSns` instance. Method can return up to 100 platform application objects per call in it's completion closure. If additional objects are available after the first page results, then a `nextToken` string will not be `nil` in response object.
+Example:
+``` swift
+let platformApplicationArn = "arn:aws:sns:us-west-2:3904190132:app/test"
+
+snsClient.listEndpointsBy(platformApplicationArn: platformApplicationArn) { (success, response, error) in
+    // Do some work
+    ...
+})
+```
+
