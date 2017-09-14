@@ -210,6 +210,65 @@ public class AwsSns {
         }).resume()
     }
     
+    /// Retrieves the endpoint attributes for a device on one of the supported push notification services.
+    ///
+    /// - Parameters:
+    ///   - endpointArn: EndpointArn of endpoint.
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the get attributes operation was successful, returned `EndpointAttributes` instance and an optional `error` in case the operation failed.
+    public func getEndpointAttributes(endpointArn: String, completion: @escaping(Bool, EndpointAttributes?, Error?) -> Void) {
+        var params = defaultParams
+        params["Action"] = "GetEndpointAttributes"
+        params["EndpointArn"] = endpointArn
+        
+        let request: URLRequest
+        do {
+            request = try self.request(with: params)
+        } catch {
+            completion(false, nil, error)
+            return
+        }
+        
+        session.dataTask(with: request) { (data, response, error) in
+            let error = self.checkForError(response: response, data: data, error: error)
+            if error == nil, let data = data, let responseBody = String(data: data, encoding: .utf8),
+                let attributes = EndpointAttributes(xml: SWXMLHash.parse(responseBody)) {
+                completion(true, attributes, nil)
+            } else {
+                completion(false, nil, error)
+            }
+        }.resume()
+    }
+    
+    /// Sets the endpoint attributes for a device on one of the supported push notification services.
+    ///
+    /// - Parameters:
+    ///   - endpointArn: EndpointArn of endpoint.
+    ///   - attributes: Attributes dictionary (suppoerted keys by AWS SNS service: `CustomUserData`, `Enabled` and `Token`).
+    ///   - completion: Completion handler, providing a `Bool` parameter specifying whether the get attributes operation was successful and an optional `error` in case the operation failed.
+    public func setEndpointAttributes(endpointArn: String, attributes: [String : String], completion: @escaping(Bool, Error?) -> Void) {
+        var params = defaultParams
+        params["Action"] = "SetEndpointAttributes"
+        params["EndpointArn"] = endpointArn
+        
+        for (index, entry) in attributes.enumerated() {
+            params["Attributes.entry.\(index + 1).key"] = entry.key
+            params["Attributes.entry.\(index + 1).value"] = entry.value
+        }
+        
+        let request: URLRequest
+        do {
+            request = try self.request(with: params)
+        } catch {
+            completion(false, error)
+            return
+        }
+        
+        session.dataTask(with: request) { (data, response, error) in
+            let error = self.checkForError(response: response, data: data, error: error)
+            completion(error == nil, error)
+        }.resume()
+    }
+    
     private func request(with urlParams: [String : String?]) throws -> URLRequest {
         var urlComponents = URLComponents(string: host)!
         urlComponents.queryItems = urlParams.filter { $0.value != nil && $0.value?.isEmpty == false }

@@ -41,7 +41,7 @@ class AwsSnsTests: XCTestCase {
     func testCreatePlatformEndpoint() {
         let createExpectation = expectation(description: "CreateExpectation")
         
-        let token = "225EF46104D58C43047A4B7749B41297A3A185CB9D441784AFEB5C2F1405285C"
+        let token = "225EF46104D58C43047A4B7749B41297A3185CB9D441784AFEB5C2F1405285C"
         
         snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
             XCTAssertTrue(success, "CreatePlatformEndpoint failed.")
@@ -83,15 +83,79 @@ class AwsSnsTests: XCTestCase {
     func testDeletePlatformEndpoint() {
         let deleteExpectation = expectation(description: "CreateExpectation")
         
-        let token = "225EF46104D58C43047A4B7749B41297A3A185CB9D441784AFEB5C2F1405285C"
+        let token = "225EF46104D58C43047A4B7749B41297A3185CB9D441784AFEB5C2F1405285C"
         
         snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
-            self.snsClient?.deleteEndpoint(endpointArn: endpointArn!) { success, error in
+            guard let endpointArn = endpointArn else {
+                XCTFail("CreatePlatformEndpoint returned nil.")
+                return
+            }
+            self.snsClient?.deleteEndpoint(endpointArn: endpointArn) { success, error in
                 XCTAssertNil(error, "DeletePlatformEndpoint returned error.")
                 deleteExpectation.fulfill()
             }
         }
         waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func testGetEndpointAttributes() {
+        let getAttributesExpectation = expectation(description: "GetAttributesExpectation")
+        
+        let token = "225EF46104D58C43047A4B7749B41297A3185CB9D441784AFEB5C2F1405285C"
+        
+        snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { [weak self] success, endpointArn, _ in
+            guard success, let endpointArn = endpointArn else {
+                XCTFail("CreatePlatformEnpoint failed")
+                return
+            }
+            self?.snsClient?.getEndpointAttributes(endpointArn: endpointArn) { (success, attributes, error) in
+                XCTAssertTrue(success, "GetEndpointAttributes failed.")
+                XCTAssertNotNil(attributes)
+                XCTAssertNil(error, "GetEndpointAttributes returned error.")
+                getAttributesExpectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 10, handler: nil)
+    }
+    
+    func testSetEndpointAttributes() {
+        let setAttributesExpectation = expectation(description: "SetAttributesExpectation")
+        
+        #if os(Linux)
+            let randomNumber1 = random()
+            let randomNumber2 = random()
+        #else
+            let randomNumber1 = arc4random()
+            let randomNumber2 = arc4random()
+        #endif
+        
+        let token = String(format: "%8x", randomNumber1)
+        let attributes = ["Enabled" : "false",
+                          "Token" : String(format: "%8x", randomNumber2) ]
+        
+        snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { [weak self] success, endpointArn, _ in
+            guard success, let endpointArn = endpointArn else {
+                XCTFail("CreatePlatformEnpoint failed")
+                return
+            }
+            self?.snsClient?.setEndpointAttributes(endpointArn: endpointArn, attributes: attributes) { (success, error) in
+                XCTAssertTrue(success, "SetEndpointAttributes failed.")
+                XCTAssertNil(error, "SetEndpointAttributes returned error.")
+                self?.snsClient?.getEndpointAttributes(endpointArn: endpointArn, completion: { (success, responseAttributes, error) in
+                    XCTAssertTrue(success, "GetEndpointAttributes failed.")
+                    XCTAssertNil(error, "GetEndpointAttributes returned error.")
+                    guard let responseAttributes = responseAttributes else {
+                        XCTFail("GetEndpointAttributes returned nil.")
+                        return
+                    }
+                    
+                    XCTAssertEqual(responseAttributes.attributes["Enabled"], attributes["Enabled"], "Attributes not set properly.")
+                    XCTAssertEqual(responseAttributes.attributes["Token"], attributes["Token"], "Attributes not set properly.")
+                    setAttributesExpectation.fulfill()
+                })
+            }
+        }
+        waitForExpectations(timeout: 15, handler: nil)
     }
 
     static var allTests = [
@@ -101,5 +165,7 @@ class AwsSnsTests: XCTestCase {
         ("testListPlatformApplications", testListPlatformApplications),
         ("testListEndpointsByPlatformApplication", testListEndpointsByPlatformApplication),
         ("testDeletePlatformEndpoint", testDeletePlatformEndpoint),
+        ("testGetEndpointAttributes", testGetEndpointAttributes),
+        ("testSetEndpointAttributes", testSetEndpointAttributes),
     ]
 }

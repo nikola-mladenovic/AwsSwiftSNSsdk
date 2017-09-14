@@ -57,7 +57,7 @@ let platformApplicationArn = "arn:aws:sns:us-west-2:3904190132:app/test"
 snsClient.createPlatformEndpoint(token: token, platformApplicationArn: platformApplicationArn) { success, endpointArn, error in
     // Do some work
     ...
-})
+}
 ```
 To list the platform application objects for the supported push notification services, such as APNS and GCM, use `listPlatformApplications` method of the `AwsSns` instance. Method can return up to 100 platform application objects per call in it's completion closure. If additional objects are available after the first page results, then a `nextToken` string will not be `nil` in response object.
 Example:
@@ -65,7 +65,7 @@ Example:
 snsClient.listPlatformApplications { (success, response, error) in
     // Do some work
     ...
-})
+}
 ```
 To list the endpoint application arns for devices in a supported push notification service, such as GCM and APNS, use `listEndpointsBy` method of the `AwsSns` instance. Method can return up to 100 platform application objects per call in it's completion closure. If additional objects are available after the first page results, then a `nextToken` string will not be `nil` in response object.
 Example:
@@ -75,6 +75,37 @@ let platformApplicationArn = "arn:aws:sns:us-west-2:3904190132:app/test"
 snsClient.listEndpointsBy(platformApplicationArn: platformApplicationArn) { (success, response, error) in
     // Do some work
     ...
-})
+}
 ```
+To delete the endpoint for a device and mobile app from Amazon SNS, use `deleteEndpoint` method of the `AwsSns` instance. When you delete an endpoint that is also subscribed to a topic, then you must also unsubscribe the endpoint from the topic.
+Example:
+``` swift
+let endpointArn = "arn:aws:sns:us-west-2:4834231343:endpoint/Example/a34939514-6d01-4444-3333-ffba93942"
 
+snsClient.deleteEndpoint(endpointArn: endpointArn) { success, error in
+    // Endpoint deleted
+    ...
+}
+```
+To retrive the endpoint attributes for a device on one of the supported push notification services, such as GCM and APNS, use `getEndpointAttributes` method of the `AwsSns` instance.
+Example:
+``` swift
+let endpointArn = "arn:aws:sns:us-west-2:4834231343:endpoint/Example/a34939514-6d01-4444-3333-ffba93942"
+
+snsClient.getEndpointAttributes(endpointArn: endpointArn) { (success, attributes, error) in
+    // Do some work
+    ...
+}
+```
+To set the attributes for an endpoint for a device on one of the supported push notification services, such as GCM and APNS, use `setEndpointAttributes` method of the `AwsSns` instance.
+Example:
+``` swift
+let endpointArn = "arn:aws:sns:us-west-2:4834231343:endpoint/Example/a34939514-6d01-4444-3333-ffba93942"
+let attributes = [ "Enabled" : "false",
+                   "Token" : "93SDOIFUHWIUEHF839UR0Q93JRF0W93FJ04W385U2Q0" ]
+
+snsClient.setEndpointAttributes(endpointArn: endpointArn, attributes: attributes) { (success, error) in
+    // Do some work
+    ...
+}
+```
