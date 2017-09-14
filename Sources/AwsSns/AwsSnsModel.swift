@@ -44,3 +44,18 @@ public struct Endpoint {
         self.enabled = enabled == "true"
     }
 }
+
+public struct EndpointAttributes {
+    public let attributes: [String : String]
+    
+    init?(xml: XMLIndexer) {
+        let attributesXml = xml["GetEndpointAttributesResponse"]["GetEndpointAttributesResult"]["Attributes"]
+        var attributes = [String : String]()
+        attributesXml["entry"].all.forEach {
+            guard let key = $0["key"].element?.text,
+                let value = $0["value"].element?.text else { return }
+            attributes[key] = value
+        }
+        self.attributes = attributes
+    }
+}
