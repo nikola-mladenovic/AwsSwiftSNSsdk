@@ -86,7 +86,7 @@ class AwsSnsTests: XCTestCase {
         let token = "6110cff81aea420ef5017029ef82dd5b44a018fae1c9a83a6ca8be5b4109bceb"
         
         snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
-            self.snsClient?.deleteEndpoint(endpointArn: endpointArn) { success, error in
+            self.snsClient?.deleteEndpoint(endpointArn: endpointArn!) { success, error in
                 XCTAssertNil(error, "DeletePlatformEndpoint returned error.")
                 deleteExpectation.fulfill()
             }
