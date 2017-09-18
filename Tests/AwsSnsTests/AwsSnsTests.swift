@@ -83,7 +83,7 @@ class AwsSnsTests: XCTestCase {
     func testDeletePlatformEndpoint() {
         let deleteExpectation = expectation(description: "CreateExpectation")
         
-        let token = "225EF46104D58C43047A4B7749B41297A3185CB9D441784AFEB5C2F1405285C"
+        let token = "6110cff81aea420ef5017029ef82dd5b44a018fae1c9a83a6ca8be5b4109bceb"
         
         snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
             guard let endpointArn = endpointArn else {
@@ -101,7 +101,7 @@ class AwsSnsTests: XCTestCase {
     func testGetEndpointAttributes() {
         let getAttributesExpectation = expectation(description: "GetAttributesExpectation")
         
-        let token = "225EF46104D58C43047A4B7749B41297A3185CB9D441784AFEB5C2F1405285C"
+        let token = "7c406c64b1e05169e6f3114c0d58ef84b11ad044300f24ca40c7ee544bc61bb8"
         
         snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
             self.snsClient?.getEndpointAttributes(endpointArn: endpointArn!) { (success, attributes, error) in
@@ -117,7 +117,7 @@ class AwsSnsTests: XCTestCase {
     func testSetEndpointAttributes() {
         let setAttributesExpectation = expectation(description: "SetAttributesExpectation")
         
-        let token = "225EF46104D58C43047A4B7749B41297A3185CB9D441784AFEB5C2F1405285C"
+        let token = "4a457987158e7703bab15cfa4f8850b469a7c2547fcb477f5c1932d3c21febb4"
         
         var attributes = ["Enabled" : "false", "Token" : token]
         
