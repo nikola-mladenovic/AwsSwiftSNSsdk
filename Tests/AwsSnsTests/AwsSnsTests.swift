@@ -41,7 +41,7 @@ class AwsSnsTests: XCTestCase {
     func testCreatePlatformEndpoint() {
         let createExpectation = expectation(description: "CreateExpectation")
         
-        let token = "225EF46104D58C43047A4B7749B41297A3185CB9D441784AFEB5C2F1405285C"
+        let token = "A6063B1C6612954BEC2A18BDA9FDC17C67E117B40EB61447BCCB4375798A66EF"
         
         snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
             XCTAssertTrue(success, "CreatePlatformEndpoint failed.")
@@ -83,7 +83,7 @@ class AwsSnsTests: XCTestCase {
     func testDeletePlatformEndpoint() {
         let deleteExpectation = expectation(description: "CreateExpectation")
         
-        let token = "6110cff81aea420ef5017029ef82dd5b44a018fae1c9a83a6ca8be5b4109bceb"
+        let token = "CE8D38C17B20BCA8566F2FD72CCF06445E6D45271CF4A9ADE0410F4ED85E052D"
         
         snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
             self.snsClient?.deleteEndpoint(endpointArn: endpointArn!) { success, error in
@@ -97,7 +97,7 @@ class AwsSnsTests: XCTestCase {
     func testGetEndpointAttributes() {
         let getAttributesExpectation = expectation(description: "GetAttributesExpectation")
         
-        let token = "7c406c64b1e05169e6f3114c0d58ef84b11ad044300f24ca40c7ee544bc61bb8"
+        let token = "BB7CDD1A628ABD5DE23EEE41C080751DF6EF166D8C16E2EC782C836D39458A10"
         
         snsClient?.createPlatformEndpoint(token: token, platformApplicationArn: "arn:aws:sns:us-west-2:487164526243:app/APNS_SANDBOX/Test") { success, endpointArn, error in
             self.snsClient?.getEndpointAttributes(endpointArn: endpointArn!) { (success, attributes, error) in
@@ -113,7 +113,7 @@ class AwsSnsTests: XCTestCase {
     func testSetEndpointAttributes() {
         let setAttributesExpectation = expectation(description: "SetAttributesExpectation")
         
-        let token = "4a457987158e7703bab15cfa4f8850b469a7c2547fcb477f5c1932d3c21febb4"
+        let token = "4D54202891C45CC4D66EE1010C6A45C2E725433F6D4E5D173A4593E872C6E242"
         
         var attributes = ["Enabled" : "false", "Token" : token]
         
@@ -123,7 +123,7 @@ class AwsSnsTests: XCTestCase {
                 XCTAssertNil(error, "SetEndpointAttributes returned error.")
                 
                 attributes["Enabled"] = "true"
-                attributes["Token"] = "03618de36c572bec302d0d85a24d30cc1cf99c98168a9c8c77653f02221bfad3"
+                attributes["Token"] = "7AC47B02ED68B0B0CA7BE04AD6B98635E376BD96620A29379D9F8711BE52AA9D"
                 self.snsClient?.setEndpointAttributes(endpointArn: endpointArn!, attributes: attributes) { (success, error) in
                     XCTAssertTrue(success, "SetEndpointAttributes failed.")
                     XCTAssertNil(error, "SetEndpointAttributes returned error.")
@@ -131,8 +131,10 @@ class AwsSnsTests: XCTestCase {
                         XCTAssertTrue(success, "GetEndpointAttributes failed.")
                         XCTAssertNil(error, "GetEndpointAttributes returned error.")
                         XCTAssertEqual(responseAttributes!.attributes["Enabled"], attributes["Enabled"], "Attributes not set properly.")
-                        XCTAssertEqual(responseAttributes!.attributes["Token"], attributes["Token"], "Attributes not set properly.")
-                        setAttributesExpectation.fulfill()
+                        XCTAssertEqual(responseAttributes!.attributes["Token"], attributes["Token"]?.lowercased(), "Attributes not set properly.")
+                        self.snsClient?.deleteEndpoint(endpointArn: endpointArn!) { _, _ in
+                            setAttributesExpectation.fulfill()
+                        }
                     })
                 }
             }
