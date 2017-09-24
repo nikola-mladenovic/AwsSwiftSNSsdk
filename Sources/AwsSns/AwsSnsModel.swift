@@ -34,14 +34,18 @@ public struct PlatformApplicationEnpoints {
 public struct Endpoint {
     public let arn: String
     public let enabled: Bool
+    public let token: String
     
     init?(xml: XMLIndexer) {
         let enabledXml = xml["Attributes"]["entry"].all.filter { $0["key"].element?.text == "Enabled" }
+        let tokenXml = xml["Attributes"]["entry"].all.filter { $0["key"].element?.text == "Token" }
         guard let arn = xml["EndpointArn"].element?.text,
-            let enabled = enabledXml.first?["value"].element?.text else { return nil }
+            let enabled = enabledXml.first?["value"].element?.text,
+            let token = tokenXml.first?["value"].element?.text else { return nil }
         
         self.arn = arn
         self.enabled = enabled == "true"
+        self.token = token
     }
 }
 
